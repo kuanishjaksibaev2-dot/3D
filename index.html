@@ -1,17 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>360 Viewer - Ядро Проекта</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360 Viewer Premium</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         <h1>360° Просмотр Товара</h1>
 
         <div class="viewer-360" id="rotate-container">
-            <img id="product-image" src="https://picsum.photos/id/21/600/600" alt="Product 360" draggable="false">
+            <img id="product-image" src="https://cloudimg.io" alt="Product 360" draggable="false">
             <div class="hint">Зажмите и тяните в сторону, чтобы крутить</div>
         </div>
 
@@ -20,7 +20,10 @@
             <button id="btn-next" aria-label="Следующий кадр">▶</button>
         </div>
     </div>
+
+    <!-- Библиотека анимации GSAP -->
     <script src="https://cloudflare.com"></script>
+    <!-- Ваш скрипт -->
     <script src="script.js"></script>
 </body>
 </html>
