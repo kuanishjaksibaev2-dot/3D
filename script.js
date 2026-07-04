@@ -1,88 +1,91 @@
-// Кадры одной машины под разными углами для честного эффекта 360°
-const IMAGES = [
-    "https://cloudimg.io",
-    "https://cloudimg.io",
-    "https://cloudimg.io",
-    "https://cloudimg.io",
-    "https://cloudimg.io"
-];
-const TOTAL_FRAMES = IMAGES.length;
-const SENSITIVITY = 20; // Высокая чувствительность для плавности
-
-const container = document.getElementById('rotate-container');
-const img = document.getElementById('product-image');
-const btnPrev = document.getElementById('btn-prev');
-const btnNext = document.getElementById('btn-next');
-
-let isDragging = false;
-let startX = 0;
-let baseFrame = 0;
-let targetFrame = 0;  
-let currentFrame = 0; 
-
-// Кеширование картинок
-IMAGES.forEach(src => { const i = new Image(); i.src = src; });
-
-function updateDOM() {
-    let frameIndex = Math.round(currentFrame) % TOTAL_FRAMES;
-    if (frameIndex < 0) frameIndex += TOTAL_FRAMES;
-    if (img) img.src = IMAGES[frameIndex];
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-// Рендер-петля GSAP для инерции
-if (window.gsap && gsap.ticker) {
-    gsap.ticker.add(() => {
-        currentFrame += (targetFrame - currentFrame) * 0.12; // 0.12 дает очень масляную плавность
-        updateDOM();
-    });
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #0f0f0f;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-// Авто-вращение
-let autoRotateInterval = setInterval(() => {
-    targetFrame += 1;
-}, 2500);
-
-function stopAutoRotate() {
-    if (autoRotateInterval) {
-        clearInterval(autoRotateInterval);
-        autoRotateInterval = null;
-    }
+.app-container {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    padding: 20px;
 }
 
-// Нажатия на стрелки
-if (btnPrev) btnPrev.addEventListener('click', () => { stopAutoRotate(); targetFrame -= 1; });
-if (btnNext) btnNext.addEventListener('click', () => { stopAutoRotate(); targetFrame += 1; });
-
-// Обработка Drag & Touch
-const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
-
-function startDrag(e) {
-    stopAutoRotate();
-    isDragging = true;
-    startX = getX(e);
-    baseFrame = targetFrame;
-    if (container) container.style.cursor = 'grabbing';
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
 }
 
-function moveDrag(e) {
-    if (!isDragging) return;
-    const currentX = getX(e);
-    const deltaX = currentX - startX;
-    const frameOffset = Math.floor(deltaX / SENSITIVITY);
-    targetFrame = baseFrame - frameOffset;
+.viewer-360 {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    border: 1px solid #2a2a2a;
 }
 
-function stopDrag() {
-    isDragging = false;
-    if (container) container.style.cursor = 'grab';
+.viewer-360 img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
-if (container) {
-    container.addEventListener('mousedown', startDrag);
-    window.addEventListener('mousemove', moveDrag);
-    window.addEventListener('mouseup', stopDrag);
+.hint {
+    position: absolute;
+    bottom: 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #ccc;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+}
 
-    container.addEventListener('touchstart', startDrag, { passive: true });
-    container.addEventListener('touchmove', moveDrag, { passive: true });
-    container.addEventListener('touchend', stopDrag);
+.controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+button {
+    background-color: #2a2a2a;
+    color: white;
+    border: 1px solid #3a3a3a;
+    padding: 12px 24px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover {
+    background-color: #3a3a3a;
+}
+
+button:active {
+    transform: scale(0.95);
 }
