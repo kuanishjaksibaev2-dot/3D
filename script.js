@@ -1,50 +1,47 @@
-// 1. Конфигурация и массив картинок
+// Кадры одной машины под разными углами для честного эффекта 360°
 const IMAGES = [
-    "https://picsum.photos/id/21/600/600",
-    "https://picsum.photos/id/22/600/600",
-    "https://picsum.photos/id/23/600/600",
-    "https://picsum.photos/id/24/600/600",
-    "https://picsum.photos/id/25/600/600"
+    "https://cloudimg.io",
+    "https://cloudimg.io",
+    "https://cloudimg.io",
+    "https://cloudimg.io",
+    "https://cloudimg.io"
 ];
 const TOTAL_FRAMES = IMAGES.length;
-const SENSITIVITY = 25; // Шаг чувствительности (в пикселях)
+const SENSITIVITY = 20; // Высокая чувствительность для плавности
 
-// 2. DOM Элементы
 const container = document.getElementById('rotate-container');
 const img = document.getElementById('product-image');
 const btnPrev = document.getElementById('btn-prev');
 const btnNext = document.getElementById('btn-next');
 
-// 3. Состояние вращения и плавности (GSAP)
 let isDragging = false;
 let startX = 0;
 let baseFrame = 0;
-let targetFrame = 0;  // Целевой кадр, к которому стремится анимация
-let currentFrame = 0; // Текущий дробный кадр на экране
+let targetFrame = 0;  
+let currentFrame = 0; 
 
-// Предзагрузка картинок в кэш браузера (чтобы не было мигания)
+// Кеширование картинок
 IMAGES.forEach(src => { const i = new Image(); i.src = src; });
 
-// Функция обновления картинки в DOM
 function updateDOM() {
     let frameIndex = Math.round(currentFrame) % TOTAL_FRAMES;
     if (frameIndex < 0) frameIndex += TOTAL_FRAMES;
-    img.src = IMAGES[frameIndex];
+    if (img) img.src = IMAGES[frameIndex];
 }
 
-// Рендер-петля GSAP (работает на частоте монитора, создавая инерцию)
-gsap.ticker.add(() => {
-    // Формула плавного замедления (lerp). 0.15 — скорость доводки
-    currentFrame += (targetFrame - currentFrame) * 0.15;
-    updateDOM();
-});
+// Рендер-петля GSAP для инерции
+if (window.gsap && gsap.ticker) {
+    gsap.ticker.add(() => {
+        currentFrame += (targetFrame - currentFrame) * 0.12; // 0.12 дает очень масляную плавность
+        updateDOM();
+    });
+}
 
-// 4. Логика авто-вращения товара при старте
+// Авто-вращение
 let autoRotateInterval = setInterval(() => {
-    targetFrame += 1; // Сдвигаем на 1 кадр каждые 2 секунды
-}, 2000);
+    targetFrame += 1;
+}, 2500);
 
-// Функция полной остановки авто-вращения при действии пользователя
 function stopAutoRotate() {
     if (autoRotateInterval) {
         clearInterval(autoRotateInterval);
@@ -52,52 +49,40 @@ function stopAutoRotate() {
     }
 }
 
-// 5. Обработчики кликов по кнопкам стрелок
-btnPrev.addEventListener('click', () => {
-    stopAutoRotate();
-    targetFrame -= 1;
-});
-btnNext.addEventListener('click', () => {
-    stopAutoRotate();
-    targetFrame += 1;
-});
+// Нажатия на стрелки
+if (btnPrev) btnPrev.addEventListener('click', () => { stopAutoRotate(); targetFrame -= 1; });
+if (btnNext) btnNext.addEventListener('click', () => { stopAutoRotate(); targetFrame += 1; });
 
-// Получение X координат для мыши и тача
+// Обработка Drag & Touch
 const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
-// 6. Логика Drag & Drop и Touch свайпов
 function startDrag(e) {
-    stopAutoRotate(); // Останавливаем авто-крутилку при первом касании
+    stopAutoRotate();
     isDragging = true;
     startX = getX(e);
     baseFrame = targetFrame;
-    container.style.cursor = 'grabbing';
+    if (container) container.style.cursor = 'grabbing';
 }
 
 function moveDrag(e) {
     if (!isDragging) return;
     const currentX = getX(e);
     const deltaX = currentX - startX;
-    
-    // Вычисляем смещение кадров
     const frameOffset = Math.floor(deltaX / SENSITIVITY);
-    targetFrame = baseFrame - frameOffset; // Минус инвертирует вращение под палец
+    targetFrame = baseFrame - frameOffset;
 }
 
 function stopDrag() {
     isDragging = false;
-    container.style.cursor = 'grab';
+    if (container) container.style.cursor = 'grab';
 }
 
-// Регистрация событий мыши
-container.addEventListener('mousedown', startDrag);
-window.addEventListener('mousemove', moveDrag);
-window.addEventListener('mouseup', stopDrag);
+if (container) {
+    container.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', stopDrag);
 
-// Регистрация событий тачскрина для смартфонов
-container.addEventListener('touchstart', startDrag, { passive: true });
-window.addEventListener('touchmove', moveDrag, { passive: true });
-window.addEventListener('touchend', stopDrag);
-
-// Предотвращение зависания при потере фокуса окна
-window.addEventListener('blur', stopDrag);
+    container.addEventListener('touchstart', startDrag, { passive: true });
+    container.addEventListener('touchmove', moveDrag, { passive: true });
+    container.addEventListener('touchend', stopDrag);
+}
